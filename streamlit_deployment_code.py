@@ -28,6 +28,10 @@ if mode == "Upload Video":
                 ret, current_frame = cap.read()
                 if not ret:
                     break
+                frame_count += 1
+                if frame_count % 3 != 0:
+                    continue
+                current_frame = cv2.resize(current_frame, (640, 360))
                 current_gray = cv2.cvtColor(current_frame, cv2.COLOR_BGR2GRAY)
                 diff = cv2.absdiff(prev_gray, current_gray)
                 _, thresh = cv2.threshold(diff, 30, 255, cv2.THRESH_BINARY)
@@ -73,6 +77,10 @@ elif mode == "Webcam":
                 ret, current_frame = cap.read()
                 if not ret:
                     break
+                frame_count += 1
+                if frame_count % 3 != 0:
+                    continue
+                current_frame = cv2.resize(current_frame, (640, 360))
                 current_gray = cv2.cvtColor(current_frame, cv2.COLOR_BGR2GRAY)
                 diff = cv2.absdiff(prev_gray, current_gray)
                 _, thresh = cv2.threshold(diff, 30, 255, cv2.THRESH_BINARY)
