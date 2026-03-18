@@ -21,6 +21,7 @@ if mode == "Upload Video":
         if not ret:
             st.error("Could not read video file.")
         else:
+            prev_frame = cv2.resize(prev_frame, (640, 360))
             prev_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)
             frame_count = 0
             play = st.button("Play Video", key="play_video_btn")
@@ -33,6 +34,11 @@ if mode == "Upload Video":
                     continue
                 current_frame = cv2.resize(current_frame, (640, 360))
                 current_gray = cv2.cvtColor(current_frame, cv2.COLOR_BGR2GRAY)
+                
+                # Ensure shapes match and handle any dimension mismatches
+                if prev_gray.shape != current_gray.shape:
+                    prev_gray = cv2.resize(prev_gray, (current_gray.shape[1], current_gray.shape[0]))
+                
                 diff = cv2.absdiff(prev_gray, current_gray)
                 _, thresh = cv2.threshold(diff, 30, 255, cv2.THRESH_BINARY)
                 contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -44,7 +50,6 @@ if mode == "Upload Video":
                     x, y, w, h = cv2.boundingRect(contour)
                     cv2.rectangle(current_frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
                 prev_gray = current_gray
-                frame_count += 1
                 # Convert BGR to RGB for display
                 frame_rgb = cv2.cvtColor(current_frame, cv2.COLOR_BGR2RGB)
                 frame_placeholder.image(frame_rgb, channels="RGB")
@@ -71,6 +76,7 @@ elif mode == "Webcam":
             st.error("Could not read from webcam.")
             st.session_state['webcam_running'] = False
         else:
+            prev_frame = cv2.resize(prev_frame, (640, 360))
             prev_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)
             frame_count = 0
             while cap.isOpened() and st.session_state['webcam_running']:
@@ -82,6 +88,11 @@ elif mode == "Webcam":
                     continue
                 current_frame = cv2.resize(current_frame, (640, 360))
                 current_gray = cv2.cvtColor(current_frame, cv2.COLOR_BGR2GRAY)
+                
+                # Ensure shapes match and handle any dimension mismatches
+                if prev_gray.shape != current_gray.shape:
+                    prev_gray = cv2.resize(prev_gray, (current_gray.shape[1], current_gray.shape[0]))
+                
                 diff = cv2.absdiff(prev_gray, current_gray)
                 _, thresh = cv2.threshold(diff, 30, 255, cv2.THRESH_BINARY)
                 contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -93,7 +104,6 @@ elif mode == "Webcam":
                     x, y, w, h = cv2.boundingRect(contour)
                     cv2.rectangle(current_frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
                 prev_gray = current_gray
-                frame_count += 1
                 frame_rgb = cv2.cvtColor(current_frame, cv2.COLOR_BGR2RGB)
                 frame_placeholder.image(frame_rgb, channels="RGB")
                 if motion_detected and save_motion:
